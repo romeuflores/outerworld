@@ -1,0 +1,50 @@
+group 'outerworld'
+version '1.0-SNAPSHOT'
+
+
+
+def specs2CoreVersion = "2.3.11"
+def scalaVersion = "2.12.2"
+def akkaVersion = "2.5.2"
+def akkaHttpVersion = "10.0.7"
+
+buildscript {
+    //ext.a_avariable='1.0.0-rc-1036'
+
+    repositories {
+        mavenCentral()
+        //jcenter()
+    }
+
+}
+
+
+apply plugin: 'scala'
+apply plugin: 'application'
+
+mainClassName = "fun.outerworld.boot.Boot"
+
+repositories {
+    mavenCentral()
+    /*maven {
+        url "http://repo.spray.io"
+    }*/
+}
+
+
+dependencies {
+
+
+    compile 'org.scala-lang:scala-library:' + scalaVersion
+
+    // AKKA
+    compile 'com.typesafe.akka:akka-actor_2.12:' + akkaVersion
+
+    //AKKA HTTP
+    compile "com.typesafe.akka:akka-http:" +akkaHttpVersion
+    //Test
+    testCompile 'com.typesafe.akka:akka-testkit_2.11:' + akkaVersion
+    testCompile 'org.specs2:specs2-core_2.11:' + specs2CoreVersion
+}
+
+
