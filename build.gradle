@@ -5,8 +5,8 @@ version '1.0-SNAPSHOT'
 
 def specs2CoreVersion = "2.3.11"
 def scalaVersion = "2.12.2"
-def akkaVersion = "2.5.2"
-def akkaHttpVersion = "10.0.7"
+def akkaVersion = "2.5.3"
+def akkaHttpVersion = "3.0.0-RC1"
 
 buildscript {
     //ext.a_avariable='1.0.0-rc-1036'
@@ -22,7 +22,7 @@ buildscript {
 apply plugin: 'scala'
 apply plugin: 'application'
 
-mainClassName = "fun.outerworld.boot.Boot"
+mainClassName = "fun.outerworld.boot.Webserver"
 
 repositories {
     mavenCentral()
@@ -39,7 +39,7 @@ dependencies {
 
     // AKKA
     compile 'com.typesafe.akka:akka-actor_2.12:' + akkaVersion
-
+    compile 'com.typesafe.akka:akka-stream_2.12:' + akkaVersion
     //AKKA HTTP
     compile "com.typesafe.akka:akka-http:" +akkaHttpVersion
     //Test
