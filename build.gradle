@@ -23,14 +23,16 @@ buildscript {
 apply plugin: 'scala'
 apply plugin: 'application'
 
-
+//noinspection GroovyUnusedAssignment
 mainClassName = "fun.outerworld.boot.Webserver"
 
 repositories {
     mavenCentral()
-    /*maven {
-        url "http://repo.spray.io"
-    }*/
+    /* maven {
+        name "typesafe-maven-release"
+        url "https://repo.typesafe.com/typesafe/maven-releases"
+    }
+    */
 }
 
 

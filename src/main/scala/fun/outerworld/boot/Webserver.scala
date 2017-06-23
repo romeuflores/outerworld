@@ -1,18 +1,17 @@
 package fun.outerworld.boot
 
-import akka.actor.{ActorSystem, Props}
+import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 import akka.http.scaladsl.model.HttpEntity
 
-import scala.io.StdIn
 /**
   * Created by romeu on 15/06/17.
   */
-object Webserver {
-  def main(args: Array[String]): Unit = {
+object Webserver extends App{
+
 
     implicit val system = ActorSystem("outerworld-system")
     implicit val materializer = ActorMaterializer()
@@ -25,8 +24,8 @@ object Webserver {
           complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Say hello to akka-http</h1>"))
         }
       }
-    val bindingFuture = Http().bindAndHandle(route, "localhost", 8080)
+    Http().bindAndHandle(route, "localhost", 8080)
 
-}
+
 
 }
