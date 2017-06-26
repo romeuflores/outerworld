@@ -1,27 +1,38 @@
 package fun.outerworld.boot
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorSystem, Props}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
-import akka.http.scaladsl.model.HttpEntity
+import fun.outerworld.Constants._
+import fun.outerworld.Implicit._
+import fun.outerworld.cmd.CommandsExecutor
+import akka.pattern.ask
 
+import scala.util.{Failure, Success}
 /**
   * Created by romeu on 15/06/17.
   */
 object Webserver extends App{
 
 
-    implicit val system = ActorSystem("outerworld-system")
+    implicit val system = ActorSystem(OUTERWORLD_SYSTEM)
     implicit val materializer = ActorMaterializer()
-    // needed for the future flatMap/onComplete in the end
+    // needed for the future flatMap/onComplete in the end`
     implicit val executionContext = system.dispatcher
+    val commandsExecutor = system.actorOf(Props[CommandsExecutor], COMMANDS_EXECUTOR)
+
+
 
     val route =
-      path("hello") {
-        get {
-          complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Say hello to akka-http</h1>"))
+      path(STUBO_COMMANDS_PATH) {
+        parameters('cmdFile) { (cmdFile) =>
+          onComplete(commandsExecutor ? cmdFile){
+            case Success(responseMessage: String) => complete(StatusCodes.OK, responseMessage)
+            case Failure(failure) => throw failure
+            case _ =>  ???
+          }
         }
       }
     Http().bindAndHandle(route, "localhost", 8080)
