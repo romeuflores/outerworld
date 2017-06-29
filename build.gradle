@@ -9,9 +9,12 @@ buildscript {
 
 }
 
+// For the scalatest plugin to work with gradle
+//Commenting out https://stackoverflow.com/questions/28592343/how-do-i-run-both-scalatest-and-junit-tests-with-gradle
+/*
 plugins {
     id "com.github.maiflai.scalatest" version "0.16"
-}
+}*/
 
 group 'outerworld'
 version '1.0-SNAPSHOT'
@@ -57,15 +60,21 @@ dependencies {
 
     //Runtime
     // for scalatest plugin to work
-    testRuntime 'org.pegdown:pegdown:1.4.2'
+    //testRuntime 'org.pegdown:pegdown:1.4.2'
 
 
     //Test
     testCompile 'org.scalatest:scalatest_2.12:' + scalaTestVersion
     testCompile 'com.typesafe.akka:akka-testkit_2.12:' + akkaVersion
     testCompile 'org.specs2:specs2-core_2.12:' + specs2CoreVersion
+
 }
 
+sourceSets {
+    test {
+        output.resourcesDir = "build/resources/test"
+    }
+}
 /*task runa(type: JavaExec, dependsOn: classes) {
     main = 'fun.outerworld.boot.Webserver'
     classpath sourceSets.main.runtimeClasspath

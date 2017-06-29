@@ -43,7 +43,7 @@ package object Implicit {
     def ?(message: Any)(implicit timeout: Timeout): Future[Any] = ask(message)(timeout)
   }
 
-  implicit val timeout = Timeout(5.seconds)
+  implicit val timeout = Timeout(15.seconds)
 
 
   implicit def elvisOperator[T](alt: =>T) = new {
