@@ -8,7 +8,7 @@ import akka.http.scaladsl.model._
 import scala.concurrent.Future
 import akka.stream.ActorMaterializer
 import akka.util.ByteString
-import fun.outerworld.message.framework.Chitchat
+import fun.outerworld.message.framework.WhatHappened
 
 
 /**
@@ -29,10 +29,11 @@ class CommandsExecutor () extends Actor with ActorLogging {
     * 2) Try and execute each command
     * @param commands
     * @return a future with details of the execution of each command
-    */
-  protected def executeCommands (commands:String): Future[Chitchat] ={
 
-  }
+  protected def executeCommands (commands:String): Future[WhatHappened] ={
+      //val commands: List[Command]  = parse(commands)
+
+  }*/
 
   def receive: Receive = {
     case (cmdFile:String) if cmdFile.toLowerCase.startsWith("http") ⇒
@@ -58,3 +59,4 @@ class CommandsExecutor () extends Actor with ActorLogging {
 
 
 }
+

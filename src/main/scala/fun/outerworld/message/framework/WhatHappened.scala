@@ -7,19 +7,18 @@ import fun.outerworld.Implicit._
   *
   * I wonder why I am implementing this - it should exist somewhere already
   */
-trait Chitchat {
-  def whatElse: List[Chitchat]
+trait WhatHappened {
+  def whatElse: List[WhatHappened]
   def code: Int
   def payload: String
 
   override def toString: String = {
-    "code: " +code + "; payload: " + payload
+    "code: " +code + "; payload: " + payload /*+ {
+      case whatElse.isEmpty =>  ""
+      case _ => whatElse.mkString("\n")
+
+    }*/
   }
 
-  //Todo:
-  /* + {
-    case whatElse.isEmpty: return ""
-    case _ : return " pp"
 
-  }*/
 }
