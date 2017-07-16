@@ -8,7 +8,11 @@ import akka.http.scaladsl.model._
 import scala.concurrent.Future
 import akka.stream.ActorMaterializer
 import akka.util.ByteString
+import fun.outerworld.cmd.parser.CommandsParser
 import fun.outerworld.message.framework.WhatHappened
+
+import scala.collection.mutable.ListBuffer
+import scala.io.Source
 
 
 /**
@@ -35,6 +39,8 @@ class CommandsExecutor () extends Actor with ActorLogging {
 
   }*/
 
+
+
   def receive: Receive = {
     case (cmdFile:String) if cmdFile.toLowerCase.startsWith("http") ⇒
       val responseFuture: Future[HttpResponse] = Http().singleRequest(HttpRequest(uri = cmdFile))
@@ -42,7 +48,7 @@ class CommandsExecutor () extends Actor with ActorLogging {
       responseFuture onComplete {
         case Success(httpResponse) ⇒
           httpResponse.entity.dataBytes.runFold(ByteString(""))(_ ++ _).foreach {
-            body ⇒ mySender ! body.utf8String
+            body ⇒ Compiler(body.utf8String)
           }
         case Failure(f) ⇒ mySender ! f
         case _ ⇒ log.error("Unexpected error @ CommandsExecutor")
@@ -58,5 +64,24 @@ class CommandsExecutor () extends Actor with ActorLogging {
 
 
 
+}
+
+object Compiler extends CommandsParser {
+  def apply(body: String)= compile(body)
+
+  def compile(body: String): List[Command] = {
+    val commands: ListBuffer[Command] = ListBuffer()
+    val failures: ListBuffer[Any] = ListBuffer()
+    val lines = body.split("\n")
+    for (line ← lines){
+      val result = parse (commandLine, line)
+      result match {
+        case Success(result,_) ⇒ commands.append(result)
+        case NoSuccess (failure) ⇒  failures.append(failure)
+      }
+
+    }
+    return commands.toList
+  }
 }
 
