@@ -48,7 +48,7 @@ class CommandsExecutor () extends Actor with ActorLogging {
       responseFuture onComplete {
         case Success(httpResponse) ⇒
           httpResponse.entity.dataBytes.runFold(ByteString(""))(_ ++ _).foreach {
-            body ⇒ Compiler(body.utf8String)
+            body ⇒ MyParser(body.utf8String)
           }
         case Failure(f) ⇒ mySender ! f
         case _ ⇒ log.error("Unexpected error @ CommandsExecutor")
@@ -66,10 +66,10 @@ class CommandsExecutor () extends Actor with ActorLogging {
 
 }
 
-object Compiler extends CommandsParser {
+object MyParser extends CommandsParser {
   def apply(body: String)= compile(body)
 
-  def compile(body: String): List[Command] = {
+  def compile(body: String): (List[Command], List[Any]) = {
     val commands: ListBuffer[Command] = ListBuffer()
     val failures: ListBuffer[Any] = ListBuffer()
     val lines = body.split("\n")
@@ -81,7 +81,7 @@ object Compiler extends CommandsParser {
       }
 
     }
-    return commands.toList
+    return (commands.toList,failures.toList)
   }
 }
 
