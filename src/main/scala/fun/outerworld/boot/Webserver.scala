@@ -27,8 +27,9 @@ object Webserver extends App{
 
     val route =
       path(STUBO_COMMANDS_PATH) {
-        parameters('cmdFile) { (cmdFile) =>
-          onComplete(commandsExecutor ? cmdFile){
+        parameterMap {
+          parameters:Map[String,String] =>
+          onComplete(commandsExecutor ? parameters){
             case Success(responseMessage: String) => complete(StatusCodes.OK, responseMessage)
             case Failure(failure) => throw failure
             case _ =>  ???

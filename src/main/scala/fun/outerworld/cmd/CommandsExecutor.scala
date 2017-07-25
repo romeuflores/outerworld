@@ -13,7 +13,7 @@ import fun.outerworld.message.framework.WhatHappened
 
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
-
+import fun.outerworld.Constants._
 
 /**
   * This actor class will receive a string which points to a commands file in an http location.
@@ -42,13 +42,17 @@ class CommandsExecutor () extends Actor with ActorLogging {
 
 
   def receive: Receive = {
-    case (cmdFile:String) if cmdFile.toLowerCase.startsWith("http") ⇒
-      val responseFuture: Future[HttpResponse] = Http().singleRequest(HttpRequest(uri = cmdFile))
+    case (parameters:Map[String,String]) if {parameters.getOrElse(COMMANDS_FILE,"").toLowerCase.startsWith("http")} ⇒
+      val responseFuture: Future[HttpResponse] = Http().singleRequest(HttpRequest(uri = parameters.getOrElse(COMMANDS_FILE,"")))
+      val remainingParameters = parameters - (COMMANDS_FILE)
       val mySender = sender
       responseFuture onComplete {
         case Success(httpResponse) ⇒
           httpResponse.entity.dataBytes.runFold(ByteString(""))(_ ++ _).foreach {
-            body ⇒ MyParser(body.utf8String)
+            body ⇒ {
+              val commands=MyParser(body.utf8String,parameters)_1
+
+            }
           }
         case Failure(f) ⇒ mySender ! f
         case _ ⇒ log.error("Unexpected error @ CommandsExecutor")
@@ -67,9 +71,9 @@ class CommandsExecutor () extends Actor with ActorLogging {
 }
 
 object MyParser extends CommandsParser {
-  def apply(body: String)= compile(body)
+  def apply(body: String,parameters:Map[String,String])= compile(body,parameters)
 
-  def compile(body: String): (List[Command], List[Any]) = {
+  def compile(body: String,parameters:Map[String,String]): (List[Command], List[Any]) = {
     val commands: ListBuffer[Command] = ListBuffer()
     val failures: ListBuffer[Any] = ListBuffer()
     val lines = body.split("\n")

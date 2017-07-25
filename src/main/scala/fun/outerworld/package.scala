@@ -12,18 +12,19 @@ import scala.concurrent.ExecutionContext.Implicits.global
   */
 package object Constants {
 
-  // ##################### Actor system name(s) ###########################
+  // ##################### Actor system name(s) ################
   val OUTERWORLD_SYSTEM="outerworld-system"
 
-  // ##################### Actor actor name(s) ############################
+  // ##################### Actor name(s) #######################
   val COMMANDS_EXECUTOR="commands-executor"
 
 
 
-  // ##################### HTTP ROUTES ###########################
+  // ##################### HTTP routes ##########################
   val STUBO_COMMANDS_PATH="/stubo/api/exec/cmds"
 
-
+  // ##################### HTTP parameter names #################
+  val COMMANDS_FILE="cmdFile"
 
 }
 package object Implicit {
