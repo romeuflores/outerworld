@@ -29,11 +29,11 @@ object Webserver extends App{
       path(STUBO_COMMANDS_PATH) {
         parameterMap {
           parameters =>
-          onComplete(commandsExecutor ? parameters){
-            case Success(responseMessage: String) => complete(StatusCodes.OK, responseMessage)
-            case Failure(failure) => throw failure
-            case _ =>  ???
-          }
+            onComplete(commandsExecutor ? parameters){
+              case Success(responseMessage: String) => complete(StatusCodes.OK, responseMessage)
+              case Failure(failure) => throw failure
+              case _ =>  ???
+            }
         }
       }
     Http().bindAndHandle(route, "localhost", 8080)

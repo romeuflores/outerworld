@@ -1,14 +1,17 @@
 package fun.outerworld.cmd
 
 
-import akka.actor.ActorSystem
-import fun.outerworld.tracking.framework.WhatHappened
+import akka.actor.{ActorSystem, Props}
+import fun.outerworld.tracking.framework.{AllFine, WhatHappened}
 
 import scala.concurrent.{Future, Promise}
 import fun.outerworld.Constants._
 import fun.outerworld.cmd.CommandType._
+import fun.outerworld.cmd.StubbingMode.{PLAYBACK, RECORD}
+import fun.outerworld.session.Session
+import akka.pattern.ask
 
-import scala.util.Success
+import scala.util.{Failure, Success}
 /**
   * Created by romeu on 05/07/17.
   */
@@ -54,13 +57,33 @@ object StubbingMode{
 }
 abstract class Command (val commandType: CommandType, val parameters: Map[String,String]=Map(), val fileNames: Seq[String]=Seq() ){
 
-  //def execute (implicit system:ActorSystem) : Future[WhatHappened]
+  def execute[T >: WhatHappened] (implicit system:ActorSystem) : Future[T]
 
 }
 
 case class DoNothingCommand (override val parameters: Map[String,String], override val fileNames: Seq[String], val whatHappened: WhatHappened)  extends Command(DO_NOTHING,parameters, fileNames){
-  //override def execute(implicit system: ActorSystem): Future[WhatHappened] = Promise()
-}
+  override def execute[T >: WhatHappened](implicit system: ActorSystem): Future[T] = {
+    val p= Promise[WhatHappened]()
+    p.trySuccess(AllFine())
+    return p.future
 
-case class BeginSessionCommand (val sessionId:String, val scenarioId:String, val mode:StubbingMode)  extends Command(BEGIN_SESSION)
+  }
+
+case class BeginSessionCommand (val sessionId:String, val scenarioId:String, val mode:StubbingMode)  extends Command(BEGIN_SESSION) {
+  override def execute[T >: WhatHappened](implicit system: ActorSystem): Future[T] = {
+
+    mode match {
+      case RECORD     ⇒ {
+        val session = system.actorOf(Props(new Session(scenarioId)), sessionId)
+        session ? mode
+      }
+      case PLAYBACK   ⇒ {
+        val session = system.actorSelection(sessionId)
+
+      }
+    }
+  }
+  }
+
+}
 
