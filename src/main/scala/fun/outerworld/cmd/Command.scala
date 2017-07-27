@@ -1,16 +1,16 @@
 package fun.outerworld.cmd
 
 
-import akka.actor.{ActorSystem, Props}
+import akka.actor.{ActorRef, ActorSystem, Props}
 import fun.outerworld.tracking.framework.{AllFine, WhatHappened}
 
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.{Await, Future, Promise}
 import fun.outerworld.Constants._
 import fun.outerworld.cmd.CommandType._
 import fun.outerworld.cmd.StubbingMode.{PLAYBACK, RECORD}
 import fun.outerworld.session.Session
 import akka.pattern.ask
-
+import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 /**
   * Created by romeu on 05/07/17.
@@ -72,18 +72,17 @@ case class DoNothingCommand (override val parameters: Map[String,String], overri
 case class BeginSessionCommand (val sessionId:String, val scenarioId:String, val mode:StubbingMode)  extends Command(BEGIN_SESSION) {
   override def execute[T >: WhatHappened](implicit system: ActorSystem): Future[T] = {
 
-    mode match {
+    val session:ActorRef = mode match {
       case RECORD     ⇒ {
-        val session = system.actorOf(Props(new Session(scenarioId)), sessionId)
-        session ? mode
+        system.actorOf(Props(new Session(scenarioId)), sessionId)
       }
       case PLAYBACK   ⇒ {
-        val session = system.actorSelection(sessionId)
-
+        Await.result(system.actorSelection(sessionId).resolveOne(), 1 second)
       }
     }
+    session ? mode
   }
-  }
+
 
 }
 
