@@ -1,7 +1,8 @@
 package fun.outerworld.cmd.parser
 
 
-import fun.outerworld.cmd.{Command, CommandType}
+import fun.outerworld.cmd._
+import fun.outerworld.tracking.framework.{GenericParsingIssue, WrongStubbingMode}
 import org.scalatest._
 
 import scala.collection.mutable.ListBuffer
@@ -46,35 +47,54 @@ class CommandsParserTest extends CommandsParser with FlatSpecLike with Matchers 
   }
   it should "parse a key=value expression as a named parameter" in {
     val result = parse(parameter, "scenario=run_Forrest-run")
-    validateParsedResult(result, Map ("scenario" -> "run_Forrest-run"))
+    validateParsedResult(result, Map ("scenario" → "run_Forrest-run"))
   }
   it should "parse a list of key=value expressions as named parameters" in {
     val result = parse(parameters, "scenario=run_Forrest-run&session=coast_to_coast")
-    validateParsedResult(result, Map ("scenario" -> "run_Forrest-run", "session" -> "coast_to_coast"))
+    validateParsedResult(result, Map ("scenario" → "run_Forrest-run", "session" → "coast_to_coast"))
   }
   it should "parse a sequence of comma separated values as file names which may include spaces" in {
     val result = parse(csvSeq, ",aGiven.textMatcher_1,a Given.response_1")
     validateParsedResult(result, Seq ("aGiven.textMatcher_1" , "a Given.response_1"))
   }
-  it should "parse a whole put/stub line" in {
+  /*it should "parse a whole put/stub line" in {
     val myCommandLine = "put/stub?session=coast_to_coast,aGiven.textMatcher_1,aGiven.response_1\n"
     val result = parse(commandLine, myCommandLine)
     val expectedCommand = Command(CommandType.PUT_STUB, Map("session" -> "coast_to_coast"), Seq("aGiven.textMatcher_1", "aGiven.response_1"))
     validateParsedResult(result, expectedCommand)
-  }
+  }*/
   it should "parse a whole begin/session line" in {
-    val myCommandLine = "begin/session?session=coast_to_coast\n"
+    val myCommandLine = "begin/session?scenario=first&session=first_1&mode=record\n"
     val result = parse(commandLine, myCommandLine)
-    val expectedCommand = Command(CommandType.BEGIN_SESSION, Map("session" -> "coast_to_coast"), Seq())
+    val expectedCommand = BeginSessionCommand("first_1", "first", StubbingMode.RECORD )
     validateParsedResult(result, expectedCommand)
   }
+  it should "parse a begin/session line as a DoNothingCommand, when no mode provided" in {
+    val myCommandLine = "begin/session?scenario=first&session=first_1\n"
+    val result = parse(commandLine, myCommandLine)
+    result match {
+      case Success(result: DoNothingCommand, _) ⇒ result.whatHappened shouldBe a[GenericParsingIssue]
+      case NoSuccess(failure) ⇒ print(failure); fail
+      case _ ⇒ ; fail
+    }
+  }
+    it should "parse a begin/session line as a DoNothingCommand with a WrongStubbingMode, when mode is invalid" in {
+      val myCommandLine = "begin/session?scenario=first&session=first_1&mode=xxx\n"
+      val result = parse(commandLine, myCommandLine)
+      result match {
+        case Success(result:DoNothingCommand,_) ⇒ result.whatHappened shouldBe a [WrongStubbingMode]
+        case NoSuccess (failure) ⇒  print (failure) ; fail
+        case _ ⇒  ; fail
+      }
 
-  it should "parse a whole end/session line" in {
+  }
+  /*it should "parse a whole end/session line" in {
     val myCommandLine = "end/session?session=coast_to_coast\n"
     val result = parse(commandLine, myCommandLine)
     val expectedCommand = Command(CommandType.END_SESSION, Map("session" -> "coast_to_coast"), Seq())
     validateParsedResult(result, expectedCommand)
-  }
+  }*/
+
   it should  "parse a file line by line" in {
     val filename = "scenarios/first/first.commands"
     val commands:ListBuffer[Command]= ListBuffer()
@@ -83,8 +103,8 @@ class CommandsParserTest extends CommandsParser with FlatSpecLike with Matchers 
     for (line ← lines){
       val result = parse (commandLine, line)
       result match {
-        case Success(result,_) ⇒ commands.append(result)
-        case NoSuccess (failure) ⇒  failures.append(failure)
+        case Success(result,_)    ⇒ commands.append(result)
+        case NoSuccess (failure)  ⇒  failures.append(failure)
       }
     }
     commands should have size 7

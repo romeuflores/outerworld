@@ -1,5 +1,14 @@
 package fun.outerworld.cmd
 
+
+import akka.actor.ActorSystem
+import fun.outerworld.tracking.framework.WhatHappened
+
+import scala.concurrent.{Future, Promise}
+import fun.outerworld.Constants._
+import fun.outerworld.cmd.CommandType._
+
+import scala.util.Success
 /**
   * Created by romeu on 05/07/17.
   */
@@ -27,8 +36,31 @@ object CommandType{
                     GET_RESPONSE
   )
 
+}
+
+sealed case class StubbingMode(name:String){
+  override def toString: String = name
+}
+
+object StubbingMode{
+  object RECORD extends StubbingMode("record")
+  object PLAYBACK extends StubbingMode("playback")
+
+  val values = List(
+    PLAYBACK,
+    RECORD
+  )
 
 }
-case class Command (val commandType: CommandType, val parameters: Map[String,String], val filenames: Seq[String] ){
+abstract class Command (val commandType: CommandType, val parameters: Map[String,String]=Map(), val fileNames: Seq[String]=Seq() ){
+
+  //def execute (implicit system:ActorSystem) : Future[WhatHappened]
 
 }
+
+case class DoNothingCommand (override val parameters: Map[String,String], override val fileNames: Seq[String], val whatHappened: WhatHappened)  extends Command(DO_NOTHING,parameters, fileNames){
+  //override def execute(implicit system: ActorSystem): Future[WhatHappened] = Promise()
+}
+
+case class BeginSessionCommand (val sessionId:String, val scenarioId:String, val mode:StubbingMode)  extends Command(BEGIN_SESSION)
+

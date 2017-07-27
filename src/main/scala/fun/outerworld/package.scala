@@ -18,13 +18,24 @@ package object Constants {
   // ##################### Actor name(s) #######################
   val COMMANDS_EXECUTOR="commands-executor"
 
+  // ##################### Commnads parameter names #################
 
+  val SESSION   =   "session"
+  val SCENARIO  =   "scenario"
+  val MODE      =   "mode"
 
   // ##################### HTTP routes ##########################
   val STUBO_COMMANDS_PATH="/stubo/api/exec/cmds"
 
   // ##################### HTTP parameter names #################
   val COMMANDS_FILE="cmdFile"
+
+  // ##################### Other  ###############################
+  val HTTP="http"
+  val EMPTY_STRING = ""
+
+
+
 
 }
 package object Implicit {
