@@ -66,7 +66,7 @@ class CommandsParserTest extends CommandsParser with FlatSpecLike with Matchers 
   it should "parse a whole begin/session line" in {
     val myCommandLine = "begin/session?scenario=first&session=first_1&mode=record\n"
     val result = parse(commandLine, myCommandLine)
-    val expectedCommand = BeginSessionCommand("first_1", "first", StubbingMode.RECORD )
+    val expectedCommand = new BeginSessionCommand("first_1", "first", StubbingMode.RECORD )
     validateParsedResult(result, expectedCommand)
   }
   it should "parse a begin/session line as a DoNothingCommand, when no mode provided" in {

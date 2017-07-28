@@ -2,16 +2,20 @@ package fun.outerworld.cmd
 
 
 import akka.actor.{ActorRef, ActorSystem, Props}
-import fun.outerworld.tracking.framework.{AllFine, WhatHappened}
+import fun.outerworld.tracking.framework.{AllFine, UnexpectedException, WhatHappened}
 
-import scala.concurrent.{Await, Future, Promise}
+import scala.concurrent.{Await, ExecutionContext, Future, Promise}
 import fun.outerworld.Constants._
 import fun.outerworld.cmd.CommandType._
-import fun.outerworld.cmd.StubbingMode.{PLAYBACK, RECORD}
+import fun.outerworld.cmd.StubbingMode._
 import fun.outerworld.session.Session
 import akka.pattern.ask
+import fun.outerworld.cmd
+import fun.outerworld.Implicit._
+
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
+
 /**
   * Created by romeu on 05/07/17.
   */
@@ -48,6 +52,7 @@ sealed case class StubbingMode(name:String){
 object StubbingMode{
   object RECORD extends StubbingMode("record")
   object PLAYBACK extends StubbingMode("playback")
+  object NONE extends StubbingMode("none")
 
   val values = List(
     PLAYBACK,
@@ -55,34 +60,57 @@ object StubbingMode{
   )
 
 }
-abstract class Command (val commandType: CommandType, val parameters: Map[String,String]=Map(), val fileNames: Seq[String]=Seq() ){
+abstract class Command (val commandType: CommandType, val parameters: Map[String,String]=Map(), val fileNames: Seq[String]=Seq() ,val whatHappened: WhatHappened = AllFine()){
 
-  def execute[T >: WhatHappened] (implicit system:ActorSystem) : Future[T]
+  def execute(implicit system: ActorSystem,ec: ExecutionContext): Future[Any]
 
 }
 
-case class DoNothingCommand (override val parameters: Map[String,String], override val fileNames: Seq[String], val whatHappened: WhatHappened)  extends Command(DO_NOTHING,parameters, fileNames){
-  override def execute[T >: WhatHappened](implicit system: ActorSystem): Future[T] = {
-    val p= Promise[WhatHappened]()
-    p.trySuccess(AllFine())
-    return p.future
+case class DoNothingCommand (override val commandType: CommandType=DO_NOTHING, override val whatHappened: WhatHappened)  extends Command(commandType,whatHappened=whatHappened) {
 
+
+
+  override def execute(implicit system: ActorSystem,ec: ExecutionContext): Future[Any] = {
+    Future.successful(whatHappened)
+  }
+}
+
+case class BeginSessionCommand (override val commandType: CommandType=BEGIN_SESSION,
+                                override val parameters: Map[String,String]=Map(),
+                                override val fileNames: Seq[String]=Seq() )  extends Command(commandType,parameters,fileNames) {
+
+
+
+  def this (sessionId:String, scenarioId:String, mode:StubbingMode){
+    this (BEGIN_SESSION,Map(SESSION  →  sessionId,
+                            SCENARIO →  scenarioId,
+                            MODE     →  mode.name))
   }
 
-case class BeginSessionCommand (val sessionId:String, val scenarioId:String, val mode:StubbingMode)  extends Command(BEGIN_SESSION) {
-  override def execute[T >: WhatHappened](implicit system: ActorSystem): Future[T] = {
+  def mode       = StubbingMode(parameters.getOrElse(MODE,"none"))
+  def sessionId  = parameters.getOrElse(SESSION,"")
+  def scenarioId = parameters.getOrElse(SCENARIO,"")
 
-    val session:ActorRef = mode match {
-      case RECORD     ⇒ {
-        system.actorOf(Props(new Session(scenarioId)), sessionId)
+  override def execute(implicit system: ActorSystem,ec: ExecutionContext): Future[Any] = {
+
+
+    mode match {
+      case RECORD ⇒ {
+        /// todo: need to catch an exception here in case session already exists.
+        val session = system.actorOf(Props(new Session(scenarioId)), sessionId)
+        (session ? mode)
       }
-      case PLAYBACK   ⇒ {
-        Await.result(system.actorSelection(sessionId).resolveOne(), 1 second)
+      case PLAYBACK ⇒ {
+        system.actorSelection(sessionId).resolveOne().andThen {
+
+          case Success(session: ActorRef) ⇒ session ? mode
+          case Failure(e) ⇒ Future.failed(new UnexpectedException(e))
+        }
       }
+      case NONE ⇒ Future.failed(new UnexpectedException(new IllegalStateException("Trying to begin a session with a mode I can't recognise")))
     }
-    session ? mode
   }
-
-
 }
+
+
 

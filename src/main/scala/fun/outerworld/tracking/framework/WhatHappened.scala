@@ -21,10 +21,13 @@ object ErrorCodes {
 
   object WRONG_STUBBING_MODE extends ErrorCodes  (1, "Wrong stubbing mode.")
   object GENERIC_PARSING_ISSUE extends ErrorCodes(2, "")
+  object GENERIC_EXCEPTION extends ErrorCodes(3, "")
 
   val values = List(OK,
     WRONG_STUBBING_MODE,
-    GENERIC_PARSING_ISSUE)
+    GENERIC_PARSING_ISSUE,
+    GENERIC_EXCEPTION
+  )
 
 }
 
@@ -42,6 +45,11 @@ abstract class WhatHappened(val what: ErrorCodes, val payload:String) extends Th
 
 }
 
-case class WrongStubbingMode  (override val what: ErrorCodes = WRONG_STUBBING_MODE  , override val payload: String = "Use either 'record' or 'playback'") extends WhatHappened(what,payload)
-case class GenericParsingIssue(override val what: ErrorCodes = GENERIC_PARSING_ISSUE, override val payload: String) extends WhatHappened(what,payload)
-case class AllFine            (override val what: ErrorCodes = OK, override val payload: String="") extends WhatHappened(what,payload)
+case class WrongStubbingMode   (override val what: ErrorCodes = WRONG_STUBBING_MODE  , override val payload: String = "Use either 'record' or 'playback'") extends WhatHappened(what,payload)
+case class GenericParsingIssue (override val what: ErrorCodes = GENERIC_PARSING_ISSUE, override val payload: String) extends WhatHappened(what,payload)
+case class AllFine             (override val what: ErrorCodes = OK, override val payload: String="") extends WhatHappened(what,payload)
+case class UnexpectedException (override val what: ErrorCodes = GENERIC_EXCEPTION, override val payload:String) extends WhatHappened(what,payload){
+  def this (e:Throwable){
+    this(payload=e.getMessage)
+  }
+}

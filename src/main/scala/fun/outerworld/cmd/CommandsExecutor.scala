@@ -34,14 +34,14 @@ class CommandsExecutor () extends Actor with ActorLogging {
     * @param commands
     * @param httpPath The http path from there to get the files from
     * @return a future with details of the execution of each command
-    **/
+    *
   private def execute(commands: List[Command], httpPath: String ): Future[WhatHappened] = {
 
     for ( command ←  commands){
 
     }
 
-  }
+  }*/
 
 
 
@@ -60,7 +60,7 @@ class CommandsExecutor () extends Actor with ActorLogging {
           httpResponse.entity.dataBytes.runFold(ByteString(EMPTY_STRING))(_ ++ _).foreach {
             body ⇒ {
               val commands=MyParser(body.utf8String,remainingParameters)_1
-              execute(commands,httpPath)
+              //execute(commands,httpPath)
 
             }
           }

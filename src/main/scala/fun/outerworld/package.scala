@@ -18,7 +18,7 @@ package object Constants {
   // ##################### Actor name(s) #######################
   val COMMANDS_EXECUTOR="commands-executor"
 
-  // ##################### Commnads parameter names #################
+  // ##################### Commands parameter names #################
 
   val SESSION   =   "session"
   val SCENARIO  =   "scenario"
@@ -33,6 +33,7 @@ package object Constants {
   // ##################### Other  ###############################
   val HTTP="http"
   val EMPTY_STRING = ""
+
 
 
 

@@ -52,13 +52,13 @@ class CommandsParser extends RegexParsers{
         && (parameters.get.get(MODE).isDefined)) ⇒ {
         val sMode = parse(stubbingMode, parameters.get.get(MODE).get)
         sMode match {
-          case Success(mode, _) ⇒ BeginSessionCommand(parameters.get.get(SESSION).get, parameters.get.get(SCENARIO).get, mode)
-          case _                ⇒ DoNothingCommand(parameters.getOrElse(Map()), csvSeq.getOrElse(Seq()),WrongStubbingMode())
+          case Success(mode, _) ⇒ new BeginSessionCommand(parameters.get.get(SESSION).get, parameters.get.get(SCENARIO).get, mode)
+          case _                ⇒ DoNothingCommand(whatHappened=WrongStubbingMode())
         }
       }
 
         //todo: improve this  either return the command type information; or improve parsing mechanism
-      case _                                              ⇒ DoNothingCommand(parameters.getOrElse(Map()), csvSeq.getOrElse(Seq()), GenericParsingIssue(payload="Not possible to execute command: [" + commandType + "]. Parameters: [" + parameters.getOrElse("none")+ "]"))
+      case _                                              ⇒ DoNothingCommand(whatHappened= GenericParsingIssue(payload="Not possible to execute command: [" + commandType + "]. Parameters: [" + parameters.getOrElse("none")+ "]"))
     }
   }
 
