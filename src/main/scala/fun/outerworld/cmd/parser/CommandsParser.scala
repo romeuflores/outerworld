@@ -15,6 +15,7 @@ import scala.util.parsing.combinator.RegexParsers
   * @See ISBN 1292024348
   */
 class CommandsParser extends RegexParsers{
+
   // Parser overrides
   override def skipWhitespace = true
   override val whiteSpace = "[ \t]+".r
@@ -46,10 +47,7 @@ class CommandsParser extends RegexParsers{
 
   def commandLine       : Parser[Command]                 = commandType ~ quotation ~ parameters.? ~ csvSeq.? ~ comments.? ~ (lineEnd) ^^ {
     case commandType ~ _ ~ parameters ~ csvSeq ~ _ ~ _    ⇒  commandType match {
-      case BEGIN_SESSION if (parameters.isDefined
-        && (parameters.get.get(SESSION).isDefined)
-        && (parameters.get.get(SCENARIO).isDefined)
-        && (parameters.get.get(MODE).isDefined)) ⇒ {
+      case BEGIN_SESSION if RequiredSessionParametersPresent(parameters) ⇒ {
         val sMode = parse(stubbingMode, parameters.get.get(MODE).get)
         sMode match {
           case Success(mode, _) ⇒ new BeginSessionCommand(parameters.get.get(SESSION).get, parameters.get.get(SCENARIO).get, mode)
@@ -57,10 +55,22 @@ class CommandsParser extends RegexParsers{
         }
       }
 
-        //todo: improve this  either return the command type information; or improve parsing mechanism
+          //todo: improve this - either return the command type information; or improve parsing mechanism
       case _                                              ⇒ DoNothingCommand(whatHappened= GenericParsingIssue(payload="Not possible to execute command: [" + commandType + "]. Parameters: [" + parameters.getOrElse("none")+ "]"))
     }
   }
-
+  //Todo: improve this to parse a whole file in one go. Currently some issues to parse end of lines...
   def tokens            : Parser [List[Command]]          = {phrase(rep1(commandLine))}
+}
+
+
+
+
+case class RequiredSessionParametersPresent (parameters:Option[Map[String,String]]){
+  def apply(parameters: Option[Map[String, String]]): Boolean = {
+    (parameters.isDefined
+    && (parameters.get.get(SESSION).isDefined)
+    && (parameters.get.get(SCENARIO).isDefined)
+    && (parameters.get.get(MODE).isDefined))
+  }
 }

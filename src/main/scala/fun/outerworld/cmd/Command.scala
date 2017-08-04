@@ -25,22 +25,28 @@ sealed case class CommandType(name:String){
 }
 
 object CommandType{
-
+  // Session commands
   object BEGIN_SESSION extends CommandType("begin/session")
   object END_SESSION extends CommandType("end/session")
+
+  // Stubbing commands
   object PUT_STUB extends CommandType("put/stub")
   object DELETE_STUBS extends CommandType("delete/stubs")
-  object PUT_DELAY extends CommandType("put/delay")
   object GET_RESPONSE extends CommandType("get/response")
+
+  // Delay commands
+  object PUT_DELAY extends CommandType("put/delay")
+
+  // Internal use
   object DO_NOTHING extends CommandType("nothing")
   object BADLY_FORMED extends CommandType("badlyformed")
 
   val values = List(BEGIN_SESSION,
-                    END_SESSION,
-                    PUT_STUB,
-                    DELETE_STUBS,
-                    PUT_DELAY,
-                    GET_RESPONSE
+    END_SESSION,
+    PUT_STUB,
+    DELETE_STUBS,
+    PUT_DELAY,
+    GET_RESPONSE
   )
 
 }
@@ -52,11 +58,13 @@ sealed case class StubbingMode(name:String){
 object StubbingMode{
   object RECORD extends StubbingMode("record")
   object PLAYBACK extends StubbingMode("playback")
-  object NONE extends StubbingMode("none")
+  object DORMANT extends StubbingMode("dormant")
+
 
   val values = List(
     PLAYBACK,
-    RECORD
+    RECORD,
+    DORMANT
   )
 
 }
@@ -107,7 +115,7 @@ case class BeginSessionCommand (override val commandType: CommandType=BEGIN_SESS
           case Failure(e) ⇒ Future.failed(new UnexpectedException(e))
         }
       }
-      case NONE ⇒ Future.failed(new UnexpectedException(new IllegalStateException("Trying to begin a session with a mode I can't recognise")))
+      case _ ⇒ Future.failed(new UnexpectedException(new IllegalStateException("Trying to begin a session with a mode I can't recognise")))
     }
   }
 }

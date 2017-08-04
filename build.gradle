@@ -34,17 +34,18 @@ def akkaVersion = "2.5.3"
 def akkaHttpVersion = "10.0.8"
 def scalaTestVersion = "3.0.1"
 def scalaParserCombinatorsVersion = "1.0.6"
+def scalaLoggingVersion = "3.7.2"
 
 //noinspection GroovyUnusedAssignment
 mainClassName = "fun.outerworld.boot.Webserver"
 
 repositories {
     mavenCentral()
-    /* maven {
+     maven {
         name "typesafe-maven-release"
         url "https://repo.typesafe.com/typesafe/maven-releases"
     }
-    */
+
 }
 
 
@@ -63,6 +64,9 @@ dependencies {
 
     //Scala Parser Combinators
     compile 'org.scala-lang.modules:scala-parser-combinators_'+scalaMajor+':'+scalaParserCombinatorsVersion
+
+    // Logging
+    compile 'com.typesafe.scala-logging:scala-logging_'+scalaMajor+':' + scalaLoggingVersion
 
     //Runtime
     // for scalatest plugin to work
